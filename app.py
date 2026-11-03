@@ -36,7 +36,13 @@ from campus_navigator import INDOOR_PAIRS, SNAP_CHAINS, NavigatorAgent, cautious
 
 st.set_page_config(page_title="SAU Campus Navigator", page_icon="🧭", layout="wide")
 
-st.html("""
+def _html(block):
+    """Render raw HTML/CSS with st.markdown. Leading spaces and blank lines are
+    removed so markdown cannot mistake the block for code."""
+    flat = "\n".join(l.strip() for l in block.splitlines() if l.strip())
+    st.markdown(flat, unsafe_allow_html=True)
+
+_html("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
 html, body, [class*="css"], .stApp { font-family: 'Poppins', system-ui, sans-serif; }
@@ -299,7 +305,7 @@ def leg_steps(path, cost_fn):
 
 
 # ------------------------------------------------------------------ page layout
-st.html(f"""
+_html(f"""
 <div class="hero"><h1>🧭 SAU Campus Navigator</h1>
 <p style="margin-bottom:0">Pick a start and a destination. A*, UCS and BFS race each other, and the best route wins.</p>
 </div>
@@ -464,7 +470,7 @@ with panel:
               on_click=lambda: st.session_state.update(find=True))
     st.divider()
     if not st.session_state.get("find"):
-        st.html('<div class="empty"><span class="ic">🗺️</span><br><b>Ready when you are</b><br>'
+        _html('<div class="empty"><span class="ic">🗺️</span><br><b>Ready when you are</b><br>'
                     'Choose where you start, any stops and your destination, then press <b>Find routes</b>.<br>'
                     'You will see what A*, UCS and BFS each found, best first.</div>')
     elif start == end and not stops:
@@ -503,7 +509,7 @@ with panel:
                           f'<div class="big">{r["minutes"]:.1f}<small> min</small></div>'
                           f'<div class="sub">{r["meters"]:.0f} m walking<br>{r["expanded"]} places examined</div>{pill}'
                           f'<div class="bar"><i style="width:{100 * r["minutes"] / worst:.0f}%"></i></div></div>')
-            st.html(f'<div class="podium">{cards}</div>')
+            _html(f'<div class="podium">{cards}</div>')
             tied = [r["name"] for r in ranked if abs(r["minutes"] - best["minutes"]) <= 0.004
                     and abs(r["lateness"] - best["lateness"]) < 0.01]
             if len(tied) == 3:
@@ -570,7 +576,7 @@ with mapcol:
         st.pyplot(draw_map(routes_to_draw, mk))
         st.caption("Orange dashed: closed path. Yellow dotted: stairs only. Small teal dots: building entrances.")
     if routes_to_draw:
-        st.html('<div class="legend">' + legend + '</div><small style="color:#aab4e8">Where routes overlap you see the '
+        _html('<div class="legend">' + legend + '</div><small style="color:#aab4e8">Where routes overlap you see the '
                     'colours side by side; the thinnest line (A*) sits on top.</small>')
     for p in graph.check():
         st.warning("Map check: " + p)
