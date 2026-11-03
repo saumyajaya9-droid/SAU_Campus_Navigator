@@ -25,10 +25,10 @@ if get_script_run_ctx(suppress_warning=True) is None:
 
 try:
     import folium
-    from streamlit_folium import st_folium
+    import streamlit.components.v1 as components
     from campus_geo import GEO, ROAD_SHAPES
     SATELLITE_OK = True
-except ImportError as _err:              # satellite view needs: pip install folium streamlit-folium
+except ImportError as _err:              # satellite view needs: pip install folium
     SATELLITE_OK = False
     SATELLITE_ERROR = str(_err)
 
@@ -36,7 +36,7 @@ from campus_navigator import INDOOR_PAIRS, SNAP_CHAINS, NavigatorAgent, cautious
 
 st.set_page_config(page_title="SAU Campus Navigator", page_icon="🧭", layout="wide")
 
-st.markdown("""
+st.html("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
 html, body, [class*="css"], .stApp { font-family: 'Poppins', system-ui, sans-serif; }
@@ -93,7 +93,7 @@ iframe { border-radius: 20px; }
 [data-testid="stImage"] img, [data-testid="stPyplotRootElement"] { border-radius: 20px; }
 @media (max-width: 900px) { .podium { grid-template-columns: 1fr; } .hero h1 { font-size:1.6rem; } }
 </style>
-""", unsafe_allow_html=True)
+""")
 
 agent = NavigatorAgent()           # rebuilt on every interaction; closures re-applied below
 graph = agent.graph
@@ -299,11 +299,11 @@ def leg_steps(path, cost_fn):
 
 
 # ------------------------------------------------------------------ page layout
-st.markdown(f"""
+st.html(f"""
 <div class="hero"><h1>🧭 SAU Campus Navigator</h1>
 <p style="margin-bottom:0">Pick a start and a destination. A*, UCS and BFS race each other, and the best route wins.</p>
 </div>
-""", unsafe_allow_html=True)
+""")
 panel, mapcol = st.columns([1, 1.35], gap="large")
 
 with panel:
@@ -464,9 +464,9 @@ with panel:
               on_click=lambda: st.session_state.update(find=True))
     st.divider()
     if not st.session_state.get("find"):
-        st.markdown('<div class="empty"><span class="ic">🗺️</span><br><b>Ready when you are</b><br>'
+        st.html('<div class="empty"><span class="ic">🗺️</span><br><b>Ready when you are</b><br>'
                     'Choose where you start, any stops and your destination, then press <b>Find routes</b>.<br>'
-                    'You will see what A*, UCS and BFS each found, best first.</div>', unsafe_allow_html=True)
+                    'You will see what A*, UCS and BFS each found, best first.</div>')
     elif start == end and not stops:
         error = "Start and destination are the same place."
         st.error(error)
@@ -503,7 +503,7 @@ with panel:
                           f'<div class="big">{r["minutes"]:.1f}<small> min</small></div>'
                           f'<div class="sub">{r["meters"]:.0f} m walking<br>{r["expanded"]} places examined</div>{pill}'
                           f'<div class="bar"><i style="width:{100 * r["minutes"] / worst:.0f}%"></i></div></div>')
-            st.markdown(f'<div class="podium">{cards}</div>', unsafe_allow_html=True)
+            st.html(f'<div class="podium">{cards}</div>')
             tied = [r["name"] for r in ranked if abs(r["minutes"] - best["minutes"]) <= 0.004
                     and abs(r["lateness"] - best["lateness"]) < 0.01]
             if len(tied) == 3:
@@ -534,7 +534,7 @@ with mapcol:
         import sys
         st.error("**Satellite view is switched off** because a package is missing "
                  f"({SATELLITE_ERROR}). Stop the app (Ctrl+C), run the line below, then start the app again:")
-        st.code(f'"{sys.executable}" -m pip install folium streamlit-folium', language="bash")
+        st.code(f'"{sys.executable}" -m pip install folium', language="bash")
     routes_to_draw, marker_source = [], None
     if ranked:
         if highlight == "All three":
@@ -558,7 +558,11 @@ with mapcol:
         else:
             ents = graph.resolve(start)
             mk = [((sum(GEO[e][0] for e in ents) / len(ents), sum(GEO[e][1] for e in ents) / len(ents)), "A", "#188038")]
-        st_folium(draw_satellite(routes_to_draw, mk), height=700, use_container_width=True, returned_objects=[])
+        _page = draw_satellite(routes_to_draw, mk).get_root().render()
+        if hasattr(st, "iframe"):                                # newer Streamlit
+            st.iframe(_page, height=700)
+        else:
+            components.html(_page, height=700)
         st.caption("Satellite imagery loads from the internet. Orange dashed: closed path. Yellow dotted: stairs only. "
                    "Teal dots: building entrances. Use the layers button for a street map.")
     else:
@@ -566,7 +570,7 @@ with mapcol:
         st.pyplot(draw_map(routes_to_draw, mk))
         st.caption("Orange dashed: closed path. Yellow dotted: stairs only. Small teal dots: building entrances.")
     if routes_to_draw:
-        st.markdown('<div class="legend">' + legend + '</div><small style="color:#aab4e8">Where routes overlap you see the '
-                    'colours side by side; the thinnest line (A*) sits on top.</small>', unsafe_allow_html=True)
+        st.html('<div class="legend">' + legend + '</div><small style="color:#aab4e8">Where routes overlap you see the '
+                    'colours side by side; the thinnest line (A*) sits on top.</small>')
     for p in graph.check():
         st.warning("Map check: " + p)
