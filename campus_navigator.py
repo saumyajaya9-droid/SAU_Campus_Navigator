@@ -200,6 +200,16 @@ NODES.update({k: tuple(v) for k, v in SNAP_NODES.items()})
 _drop = {frozenset(p) for p in _SNAP_DROP}
 EDGES[:] = [e for e in EDGES if frozenset(e[:2]) not in _drop] + [tuple(e) for e in SNAP_EDGES]
 # ---- SNAP END
+# ---- GATE1 ROAD BEGIN
+# The road leaving Gate1 to the north-west passes the Security room, the Suffle store and the Tapri (they stand beside it),
+# then carries on to J16. Before, those three were dead-end spurs, so Gate1 had only one way out.
+EDGES[:] = [e for e in EDGES if not (e[0] == "Gate1" and e[1] in ("SecurityRoom", "SuffleStore", "Tapri"))]
+EDGES += [("Gate1", "SecurityRoom", 10.2, True, None, None),
+          ("SecurityRoom", "SuffleStore", 12.4, True, None, None),
+          ("SuffleStore", "Tapri", 18.0, True, None, None),
+          ("Tapri", "J16", 64.0, True, None, None)]
+SNAP_CHAINS[("Gate1", "J16")] = ["Gate1", "SecurityRoom", "SuffleStore", "Tapri", "J16"]
+# ---- GATE1 ROAD END
 
 # INDOOR links: a building can be crossed from one of its entrances to another. Length = straight line x 1.2 (corridors
 # are not straight), so it never undercuts the A* heuristic. The app can switch them off (it just closes them).
@@ -751,10 +761,13 @@ def demo():
     agent.close("J4", "J6")
     print("   after closing J4 <-> J6 (e.g. maintenance):")
     show_route(agent.route("Gate1", "Gate3"))
-    agent.close("J15", "J13"); agent.close("J15", "J14")
-    print("   after ALSO closing J15 <-> J13 and J15 <-> J14 (Gate 1 is cut off):")
+    agent.close("Gate1", "J16")
+    print("   after ALSO closing the north-west road Gate1 <-> J16 (Gate 1 uses its other road, via J15):")
     show_route(agent.route("Gate1", "Gate3"))
-    agent.reopen("J4", "J6"); agent.reopen("J15", "J13"); agent.reopen("J15", "J14")
+    agent.close("Gate1", "J15")
+    print("   after ALSO closing Gate1 <-> J15 (both roads out of Gate 1 are shut, so Gate 1 is cut off):")
+    show_route(agent.route("Gate1", "Gate3"))
+    agent.reopen("J4", "J6"); agent.reopen("Gate1", "J16"); agent.reopen("Gate1", "J15")
 
     print("\n" + "=" * 72, "\n3. ACCESSIBILITY  Gate1 -> Gate3  (what-if scenario)\n" + "=" * 72)
     print("   No real step data is recorded yet, so imagine J4 <-> J6 has steps. In the app, mark real ones\n"

@@ -77,8 +77,18 @@ def test_closed_path_is_never_used_and_reopening_restores():
 
 def test_no_route_when_gate_is_cut_off():
     a = no_indoor(fresh())
-    a.close("J15", "J14"); a.close("J15", "J13")
+    a.close("Gate1", "J15"); a.close("Gate1", "J16")      # Gate1 has two ways out; close both
     assert a.route("Gate1", "Gate3")["found"] is False
+
+
+def test_gate1_has_a_second_road_when_one_is_closed():
+    a = no_indoor(fresh())
+    a.close("Gate1", "J15")
+    r = a.route("Gate1", "Gate3")
+    assert r["found"] and r["path"][1:4] == ["SecurityRoom", "SuffleStore", "Tapri"]
+    a.reopen("Gate1", "J15"); a.close("Gate1", "J16")
+    r = a.route("Gate1", "Gate3")
+    assert r["found"] and "J101" in r["path"]
 
 
 def test_accessible_route_avoids_stepped_paths():
