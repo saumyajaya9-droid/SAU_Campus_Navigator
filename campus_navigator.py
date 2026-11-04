@@ -553,6 +553,8 @@ def solve_local_search(start, stops, step, dwell=0.0, iterations=4000, seed=1, e
         t, cur, late, arr, via = 0.0, start, 0.0, [], []
         for s in order + ([end] if end is not None else []):
             hop = step(cur, s)
+            if hop is None:                                    # closures / accessibility cut this stop off
+                return [], [], math.inf
             t += hop[0]
             arr.append(t)
             via.append(hop[1])
@@ -579,6 +581,8 @@ def solve_local_search(start, stops, step, dwell=0.0, iterations=4000, seed=1, e
             if late < best_late:
                 best, best_arr, best_via, best_late = cand[:], arr, via, late
         temp *= 0.995
+    if best_late == math.inf:                                  # some stop cannot be reached at all
+        return None, None, None, math.inf
     return best + ([end] if end is not None else []), best_arr, best_via, best_late
 
 
@@ -679,6 +683,8 @@ class NavigatorAgent:
             if order is None:
                 method = "anneal"
                 order, arr, via, late = solve_local_search(s0, stops, step, dwell, end=end)
+                if order is None:
+                    continue                                    # a stop is unreachable from this start
             if any(step(n, p) is None for n, p in zip([s0] + via, order)):
                 continue
             finish = arr[-1] if arr else 0.0

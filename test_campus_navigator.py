@@ -91,6 +91,13 @@ def test_gate1_has_a_second_road_when_one_is_closed():
     assert r["found"] and "J101" in r["path"]
 
 
+def test_multi_stop_reports_an_unreachable_stop_instead_of_crashing():
+    a = no_indoor(fresh())
+    a.close("Gate1", "J15"); a.close("Gate1", "J16")     # Gate1 cut off from everything
+    r = a.multi_stop("Gate1", {"Library": 30, "Admin": 30})
+    assert r["found"] is False and "reason" in r
+
+
 def test_accessible_route_avoids_stepped_paths():
     a = no_indoor(fresh()); g = a.graph
     a.set_accessible("J4", "J6", False)
