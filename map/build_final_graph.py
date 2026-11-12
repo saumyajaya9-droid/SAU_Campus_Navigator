@@ -1,7 +1,7 @@
 """Final SAU graph: junction roads (your red paths) + access links (entrance/shop/gate -> nearest junction)."""
 import csv, math, json, heapq
 rows = list(csv.DictReader(open("nodes_gps_v3.csv", encoding="cp1252")))
-fix = {"Faculty Housing": "FacHousing", "Safal  Store": "SuffleStore", "HostelA_w": "HostelA_W", "Amphitheatre": "Amphitheater",
+fix = {"Faculty Housing": "FacHousing", "Safal  Store": "SafalStore", "HostelA_w": "HostelA_W", "Amphitheatre": "Amphitheater",
        "library": "Library_W"}
 pos, kind = {}, {}
 for r in rows:

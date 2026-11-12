@@ -95,7 +95,7 @@ NODES = {   # name -> (x, y) metres east/north of Gate 1, converted from your GP
     "Library_W": (-55.1, 324.1),
     "Playground": (-63.3, 237.9),
     "SecurityRoom": (-6.4, 7.8),
-    "SuffleStore": (-17.0, 14.1),
+    "SafalStore": (-17.0, 14.1),
     "Tapri": (-30.5, 25.8),
 }
 
@@ -150,7 +150,7 @@ EDGES = [
     ("FacHousing_W", "J6", 132.0, True, None, None),
     ("Gate1", "J15", 170.3, True, None, None),
     ("Gate1", "SecurityRoom", 10.1, True, None, None),
-    ("Gate1", "SuffleStore", 22.1, True, None, None),
+    ("Gate1", "SafalStore", 22.1, True, None, None),
     ("Gate1", "Tapri", 39.9, True, None, None),
     ("Gate2", "J10", 7.2, True, None, None),
     ("Gate3", "J1", 64, True, None, None),
@@ -201,14 +201,14 @@ _drop = {frozenset(p) for p in _SNAP_DROP}
 EDGES[:] = [e for e in EDGES if frozenset(e[:2]) not in _drop] + [tuple(e) for e in SNAP_EDGES]
 # ---- SNAP END
 # ---- GATE1 ROAD BEGIN
-# The road leaving Gate1 to the north-west passes the Security room, the Suffle store and the Tapri (they stand beside it),
+# The road leaving Gate1 to the north-west passes the Security room, the Safal store and the Tapri (they stand beside it),
 # then carries on to J16. Before, those three were dead-end spurs, so Gate1 had only one way out.
-EDGES[:] = [e for e in EDGES if not (e[0] == "Gate1" and e[1] in ("SecurityRoom", "SuffleStore", "Tapri"))]
+EDGES[:] = [e for e in EDGES if not (e[0] == "Gate1" and e[1] in ("SecurityRoom", "SafalStore", "Tapri"))]
 EDGES += [("Gate1", "SecurityRoom", 10.2, True, None, None),
-          ("SecurityRoom", "SuffleStore", 12.4, True, None, None),
-          ("SuffleStore", "Tapri", 18.0, True, None, None),
+          ("SecurityRoom", "SafalStore", 12.4, True, None, None),
+          ("SafalStore", "Tapri", 18.0, True, None, None),
           ("Tapri", "J16", 64.0, True, None, None)]
-SNAP_CHAINS[("Gate1", "J16")] = ["Gate1", "SecurityRoom", "SuffleStore", "Tapri", "J16"]
+SNAP_CHAINS[("Gate1", "J16")] = ["Gate1", "SecurityRoom", "SafalStore", "Tapri", "J16"]
 # ---- GATE1 ROAD END
 
 # INDOOR links: a building can be crossed from one of its entrances to another. Length = straight line x 1.2 (corridors

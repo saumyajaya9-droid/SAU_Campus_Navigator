@@ -25,10 +25,10 @@ if get_script_run_ctx(suppress_warning=True) is None:
 
 try:
     import folium
-    from streamlit_folium import st_folium
+    import streamlit.components.v1 as components
     from campus_geo import GEO, ROAD_SHAPES
     SATELLITE_OK = True
-except ImportError as _err:              # satellite view needs: pip install folium streamlit-folium
+except ImportError as _err:              # satellite view needs: pip install folium
     SATELLITE_OK = False
     SATELLITE_ERROR = str(_err)
 
@@ -36,7 +36,13 @@ from campus_navigator import INDOOR_PAIRS, SNAP_CHAINS, NavigatorAgent, cautious
 
 st.set_page_config(page_title="SAU Campus Navigator", page_icon="🧭", layout="wide")
 
-st.markdown("""
+def _html(block):
+    """Render raw HTML/CSS with st.markdown. Leading spaces and blank lines are
+    removed so markdown cannot mistake the block for code."""
+    flat = "\n".join(l.strip() for l in block.splitlines() if l.strip())
+    st.markdown(flat, unsafe_allow_html=True)
+
+_html("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
 html, body, [class*="css"], .stApp { font-family: 'Poppins', system-ui, sans-serif; }
@@ -93,7 +99,7 @@ iframe { border-radius: 20px; }
 [data-testid="stImage"] img, [data-testid="stPyplotRootElement"] { border-radius: 20px; }
 @media (max-width: 900px) { .podium { grid-template-columns: 1fr; } .hero h1 { font-size:1.6rem; } }
 </style>
-""", unsafe_allow_html=True)
+""")
 
 agent = NavigatorAgent()           # rebuilt on every interaction; closures re-applied below
 graph = agent.graph
@@ -189,9 +195,15 @@ def draw_map(routes, markers):
             ax.scatter([x], [y], s=22, color="#5f6b76", zorder=3)
             ax.annotate(n, (x, y), textcoords="offset points", xytext=(4, 4), fontsize=6.5, color="#7a858f")
         else:
-            ax.scatter([x], [y], s=34, color="#111" if n.startswith("Gate") else "#8e24aa", zorder=3,
-                       marker="^" if n.startswith("Gate") else "o")
-            ax.annotate(n, (x, y), textcoords="offset points", xytext=(6, -12), fontsize=8, color="#3c4650")
+            is_gate = n.startswith("Gate")
+            ax.scatter([x], [y], s=120 if is_gate else 34, color="#d50000" if is_gate else "#8e24aa",
+                       zorder=6 if is_gate else 3, marker="^" if is_gate else "o")
+            # labels: gates bold and to the right; the places crowded beside Gate1 go to the left so nothing overlaps
+            dx, dy, ha = {"SecurityRoom": (-8, -9, "right"), "SafalStore": (-8, 0, "right"), "Tapri": (-8, 6, "right")}.get(
+                n, (12, -4, "left") if is_gate else (6, -12, "left"))
+            ax.annotate(n, (x, y), textcoords="offset points", xytext=(dx, dy), ha=ha,
+                        fontsize=9 if is_gate else 8, fontweight="bold" if is_gate else "normal",
+                        color="#b00020" if is_gate else "#3c4650", zorder=6)
     for b in graph.buildings:
         x, y = where(b)
         ax.annotate(b, (x, y), ha="center", va="center", fontsize=8, fontweight="bold", color="#9a6700", zorder=4)
@@ -254,7 +266,8 @@ def draw_satellite(routes, markers):
                     line += edge_line(a, b)
             if len(line) > 1:
                 folium.PolyLine(line, color=colour, weight=width, opacity=0.95).add_to(m)
-    for n, (la, lo) in GEO.items():
+    # gates are drawn last so nearby markers (Security room, Safal store...) cannot cover them
+    for n, (la, lo) in sorted(GEO.items(), key=lambda kv: kv[0].startswith("Gate")):
         if n in entrances:
             folium.CircleMarker((la, lo), radius=3, color="#00bfa5", fill=True, fill_opacity=1, weight=1,
                                 tooltip=n).add_to(m)
@@ -264,9 +277,15 @@ def draw_satellite(routes, markers):
             folium.CircleMarker((la, lo), radius=4, color="#cfd8dc", fill=True, fill_color="#455a64",
                                 fill_opacity=1, weight=1, tooltip=n).add_to(m)
         else:
-            folium.CircleMarker((la, lo), radius=6, color="white", fill=True,
-                                fill_color="#111" if n.startswith("Gate") else "#8e24aa", fill_opacity=1,
+            is_gate = n.startswith("Gate")
+            folium.CircleMarker((la, lo), radius=9 if is_gate else 6, color="white", fill=True,
+                                fill_color="#d50000" if is_gate else "#8e24aa", fill_opacity=1,
                                 weight=2, tooltip=n).add_to(m)
+            if is_gate:                                                   # always-visible gate name
+                folium.Marker((la, lo), icon=folium.DivIcon(
+                    icon_size=(60, 16), icon_anchor=(-12, 8),
+                    html=f'<div style="font:700 12px sans-serif;color:#fff;'
+                         f'text-shadow:0 0 3px #000,0 0 3px #000">{n}</div>')).add_to(m)
     for b, ents in graph.buildings.items():                           # building names at the middle of their entrances
         la = sum(GEO[e][0] for e in ents) / len(ents)
         lo = sum(GEO[e][1] for e in ents) / len(ents)
@@ -299,11 +318,11 @@ def leg_steps(path, cost_fn):
 
 
 # ------------------------------------------------------------------ page layout
-st.markdown(f"""
+_html(f"""
 <div class="hero"><h1>🧭 SAU Campus Navigator</h1>
 <p style="margin-bottom:0">Pick a start and a destination. A*, UCS and BFS race each other, and the best route wins.</p>
 </div>
-""", unsafe_allow_html=True)
+""")
 panel, mapcol = st.columns([1, 1.35], gap="large")
 
 with panel:
@@ -464,9 +483,9 @@ with panel:
               on_click=lambda: st.session_state.update(find=True))
     st.divider()
     if not st.session_state.get("find"):
-        st.markdown('<div class="empty"><span class="ic">🗺️</span><br><b>Ready when you are</b><br>'
+        _html('<div class="empty"><span class="ic">🗺️</span><br><b>Ready when you are</b><br>'
                     'Choose where you start, any stops and your destination, then press <b>Find routes</b>.<br>'
-                    'You will see what A*, UCS and BFS each found, best first.</div>', unsafe_allow_html=True)
+                    'You will see what A*, UCS and BFS each found, best first.</div>')
     elif start == end and not stops:
         error = "Start and destination are the same place."
         st.error(error)
@@ -503,7 +522,7 @@ with panel:
                           f'<div class="big">{r["minutes"]:.1f}<small> min</small></div>'
                           f'<div class="sub">{r["meters"]:.0f} m walking<br>{r["expanded"]} places examined</div>{pill}'
                           f'<div class="bar"><i style="width:{100 * r["minutes"] / worst:.0f}%"></i></div></div>')
-            st.markdown(f'<div class="podium">{cards}</div>', unsafe_allow_html=True)
+            _html(f'<div class="podium">{cards}</div>')
             tied = [r["name"] for r in ranked if abs(r["minutes"] - best["minutes"]) <= 0.004
                     and abs(r["lateness"] - best["lateness"]) < 0.01]
             if len(tied) == 3:
@@ -534,7 +553,7 @@ with mapcol:
         import sys
         st.error("**Satellite view is switched off** because a package is missing "
                  f"({SATELLITE_ERROR}). Stop the app (Ctrl+C), run the line below, then start the app again:")
-        st.code(f'"{sys.executable}" -m pip install folium streamlit-folium', language="bash")
+        st.code(f'"{sys.executable}" -m pip install folium', language="bash")
     routes_to_draw, marker_source = [], None
     if ranked:
         if highlight == "All three":
@@ -558,7 +577,11 @@ with mapcol:
         else:
             ents = graph.resolve(start)
             mk = [((sum(GEO[e][0] for e in ents) / len(ents), sum(GEO[e][1] for e in ents) / len(ents)), "A", "#188038")]
-        st_folium(draw_satellite(routes_to_draw, mk), height=700, use_container_width=True, returned_objects=[])
+        _page = draw_satellite(routes_to_draw, mk).get_root().render()
+        if hasattr(st, "iframe"):                                # newer Streamlit
+            st.iframe(_page, height=700)
+        else:
+            components.html(_page, height=700)
         st.caption("Satellite imagery loads from the internet. Orange dashed: closed path. Yellow dotted: stairs only. "
                    "Teal dots: building entrances. Use the layers button for a street map.")
     else:
@@ -566,7 +589,7 @@ with mapcol:
         st.pyplot(draw_map(routes_to_draw, mk))
         st.caption("Orange dashed: closed path. Yellow dotted: stairs only. Small teal dots: building entrances.")
     if routes_to_draw:
-        st.markdown('<div class="legend">' + legend + '</div><small style="color:#aab4e8">Where routes overlap you see the '
-                    'colours side by side; the thinnest line (A*) sits on top.</small>', unsafe_allow_html=True)
+        _html('<div class="legend">' + legend + '</div><small style="color:#aab4e8">Where routes overlap you see the '
+                    'colours side by side; the thinnest line (A*) sits on top.</small>')
     for p in graph.check():
         st.warning("Map check: " + p)

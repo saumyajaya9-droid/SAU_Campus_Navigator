@@ -51,7 +51,7 @@ FacHousing_E,J11,57.5,access
 FacHousing_W,J6,58.8,access
 Gate1,J15,170.3,road
 Gate1,SecurityRoom,10.1,access
-Gate1,SuffleStore,22.1,access
+Gate1,SafalStore,22.1,access
 Gate1,Tapri,39.9,access
 Gate2,J10,7.2,access
 Gate3,J1,64,road
