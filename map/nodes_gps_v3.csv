@@ -1,0 +1,74 @@
+name,kind,lat,lon,notes
+Gate1,gate,28.481552,77.201825,
+Gate2,gate,28.484052,77.198595,
+Gate3,gate,28.48755,77.197612,
+J1,junction,28.487383,77.197994,
+J2,junction,28.485433,77.197935,
+J3,junction,28.485028,77.197432,
+J4,junction,28.48458,77.200704,
+J5,junction,28.484663,77.199298,
+J6,junction,28.484086,77.201431,
+J7,junction,28.484057,77.203124,
+J8,junction,28.484164,77.200115,
+J9,junction,28.483721,77.200445,
+J10,junction,28.484101,77.198644,
+J11,junction,28.483617,77.202071,
+J12,junction,28.483284,77.201789,
+J13,junction,28.483213,77.202674,
+J14,junction,28.482952,77.201496,
+J15,junction,28.482357,77.202305,
+J16,junction,28.482178,77.201073,
+J17,junction,28.481662,77.20185,
+ConventionCentre,building,28.486643,77.198641,
+Amphitheatre,open_space,28.485711,77.198337,
+SecurityRoom,security,28.481623,77.20176,
+Safal  Store,shop,28.48168,77.201651,
+Tapri,café,28.481785,77.201513,
+AC1,building_centre,28.484671,77.198512,pin the middle of the building
+AC2,building_centre,28.485013,77.197995,pin the middle of the building
+AC3,building_centre,28.485591,77.197596,pin the middle of the building
+AC4,building_centre,28.486311,77.19778,pin the middle of the building
+AC5,building_centre,28.486875,77.197987,pin the middle of the building
+AC6,building_centre,28.485283,77.199057,pin the middle of the building
+AC7,building_centre,28.484931,77.199572,pin the middle of the building
+AC8,building_centre,28.485131,77.20068,pin the middle of the building
+Admin,building_centre,28.484587,77.200149,pin the middle of the building
+Faculty Housing,building_centre,28.484223,77.2021,pin the middle of the building
+GuestHouse,building_centre,28.483871,77.202672,pin the middle of the building
+HostelA,building_centre,28.482297,77.201666,pin the middle of the building
+HostelB,building_centre,28.482997,77.202102,pin the middle of the building
+Library,building_centre,28.484643,77.201477,pin the middle of the building
+AC1_E,entrance,28.484747,77.198788,
+AC1_N,entrance,28.484904,77.198693,
+AC1_S,entrance,28.48444,77.198314,
+AC2_S,entrance,28.484839,77.197737,
+AC2_W,entrance,28.48527,77.198043,
+AC3_S,entrance,28.485487,77.197892,
+AC3_W,entrance,28.485538,77.197265,
+AC4_E,entrance,28.486051,77.197917,
+AC4_N,entrance,28.486497,77.197974,
+AC4_W,entrance,28.486368,77.197384,
+AC5_E,entrance,28.486808,77.198323,
+AC5_N,entrance,28.48705,77.198218,
+AC5_S,entrance,28.486624,77.198026,
+AC6_S,entrance,28.485216,77.198739,
+AC6_N,entrance,28.4855,77.199246,
+AC7_S,entrance,28.48467,77.199552,
+AC7_N,entrance,28.485142,77.199762,
+AC8_N,entrance,28.485226,77.201023,
+AC8_S,entrance,28.485002,77.20049,
+Admin_E,entrance,28.484511,77.200381,
+Admin_N,entrance,28.484781,77.20034,
+FacHousing_W,entrance,28.484433,77.201887,
+FacHousing_E,entrance,28.484059,77.20238,
+HostelA_w,entrance,28.482519,77.201424,
+HostelA_E,entrance,28.482056,77.201986,
+HostelB_W,entrance,28.483232,77.201883,
+HostelB_E,entrance,28.482793,77.202386,
+library,entrance,28.484484,77.201262,
+GuestHouse,entrance,28.483717,77.202842,
+Convention_center,entrance,,,
+J18,junction,28.485019,77.198793,
+Playground,open_space,28.483704,77.201178,volleyball/playground
+Court1,open_space,28.484044,77.200633,volleyball court near Library side
+Court2,open_space,28.482634,77.201198,basketball court near Hostel A
